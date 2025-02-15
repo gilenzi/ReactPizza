@@ -1,15 +1,15 @@
-import * as HomeComponents from './styled-components';
-import {useSelector} from 'react-redux';
-import {RootState} from '../../state/store';
-import {CreateUser} from '../../ui/create-user/create-user';
-import {ButtonLink} from './styled-components';
+import * as HomeComponents from "./styles";
+import { useSelector } from "react-redux";
+import { RootState } from "../../state/store";
+import { CreateUser } from "../../ui/create-user/create-user";
+import { ButtonLink } from "./styles";
 
-const {Title, TitleDescription, WelcomeSection, WelcomeDescription} =
+const { Title, TitleDescription, WelcomeSection, WelcomeDescription } =
   HomeComponents;
 
 export default function Home() {
   const username = useSelector((state: RootState) => state.user.username);
-  const buttonStyle = {marginTop: '2rem'};
+  const buttonStyle = { marginTop: "2rem" };
 
   return (
     <div>
@@ -22,10 +22,10 @@ export default function Home() {
           👋 Welcome! Please start by telling us your name:
         </WelcomeDescription>
 
-        {username === '' ? (
+        {username === "" ? (
           <CreateUser />
         ) : (
-          <ButtonLink to={'/menu'} style={buttonStyle}>
+          <ButtonLink to={"/menu"} style={buttonStyle}>
             Continue Ordering, {username}
           </ButtonLink>
         )}

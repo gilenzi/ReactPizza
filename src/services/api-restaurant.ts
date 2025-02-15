@@ -1,4 +1,4 @@
-import {CartItem} from '../state/cart/cart-slice';
+import { CartItem } from "../state/cart/cart-slice";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -8,12 +8,12 @@ export const getMenu = async () => {
     const menu = await res.json();
 
     if (!res.ok) {
-      throw new Error('Faild to fetch menu.');
+      throw new Error("Faild to fetch menu.");
     }
 
     return menu;
   } catch (error) {
-    console.log('Fetch menu error:', error);
+    console.log("Fetch menu error:", error);
   }
 };
 
@@ -29,10 +29,10 @@ export interface NewOrder {
 export const createNewOrder = async (newOrder: NewOrder) => {
   try {
     const res = await fetch(`${API_URL}/order`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(newOrder),
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -42,17 +42,17 @@ export const createNewOrder = async (newOrder: NewOrder) => {
       );
     }
 
-    const {data} = await res.json();
+    const { data } = await res.json();
     return data;
   } catch (error) {
-    console.log('Creating order error:', error);
+    console.log("Creating order error:", error);
   }
 };
 
-export async function getOrder(id: number) {
+export async function getOrder(id: string) {
   const res = await fetch(`${API_URL}/order/${id}`);
   if (!res.ok) throw Error(`Couldn't find order #${id}`);
 
-  const {data} = await res.json();
+  const { data } = await res.json();
   return data;
 }

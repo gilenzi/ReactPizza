@@ -1,17 +1,18 @@
-import {Form, redirect, useActionData, useNavigation} from 'react-router-dom';
-import {useSelector} from 'react-redux';
-import {RootState} from '../../state/store';
-import {Row} from '../row/row';
-import Button from '../button/button';
+import { Form, redirect, useActionData, useNavigation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../state/store";
+import { Row } from "../row/row";
+import Button from "../button/button";
 import {
   FieldWrapper,
   FormLabel,
   FormInput,
   FormCheckbox,
   ErrorMessage,
-} from './styled-components';
-import {createNewOrder} from '../../services/api-restaurant';
-import {useState} from 'react';
+} from "./styles";
+import { createNewOrder } from "../../services/api-restaurant";
+import { useState } from "react";
+import { fetchAddress } from "../../state/user/user-slice";
 
 const isValidPhone = (str: string) =>
   /^\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/.test(
@@ -19,25 +20,34 @@ const isValidPhone = (str: string) =>
   );
 
 const formStyles = {
-  maxWidth: '48rem',
+  maxWidth: "48rem",
 };
 
 export function OrderForm() {
   const [withPriority, setWithPriority] = useState(false);
-  const {username} = useSelector((state: RootState) => state.user);
-  const {total, items} = useSelector((state: RootState) => state.cart);
+  const {
+    username,
+    address,
+    status: addressStatus,
+  } = useSelector((state: RootState) => state.user);
+  const { total, items } = useSelector((state: RootState) => state.cart);
   const formErrors = useActionData();
+  const dispatch = useDispatch();
 
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
+  const isSubmitting = navigation.state === "submitting";
 
   const totalPrice = withPriority ? (total * 1.2).toFixed(2) : total.toFixed(2);
-
-  console.log('items', items);
+  const isLoadingAddress = addressStatus === "loading";
 
   const priorityHandler = () => {
     setWithPriority(!withPriority);
   };
+
+  function getAddressHandler(e) {
+    e.preventDefault();
+    dispatch(fetchAddress());
+  }
 
   return (
     <Form style={formStyles} method="POST">
@@ -62,10 +72,20 @@ export function OrderForm() {
         </Row>
         {formErrors?.phone && <ErrorMessage>{formErrors.phone}</ErrorMessage>}
       </FieldWrapper>
-      <FieldWrapper>
+      <FieldWrapper id="address-wrapper">
         <Row>
           <FormLabel htmlFor="address">Address</FormLabel>
-          <FormInput type="text" name="address" id="address" />
+          <FormInput
+            type="text"
+            name="address"
+            placeholder={isLoadingAddress ? "Getting address" : ""}
+            disabled={isLoadingAddress}
+            defaultValue={address}
+            id="address"
+          />
+          <span>
+            <Button onClick={getAddressHandler}>Get address</Button>
+          </span>
         </Row>
         {formErrors?.address && (
           <ErrorMessage>{formErrors.address}</ErrorMessage>
@@ -83,8 +103,12 @@ export function OrderForm() {
         </FormLabel>
       </Row>
       <FormInput type="hidden" name="cart" value={JSON.stringify(items)} />
-      <Button disabled={isSubmitting} style={{marginTop: '2rem'}} type="submit">
-        {isSubmitting ? 'Placing order....' : `Order now from ${totalPrice}`}
+      <Button
+        disabled={isSubmitting}
+        style={{ marginTop: "2rem" }}
+        type="submit"
+      >
+        {isSubmitting ? "Placing order...." : `Order now from ${totalPrice}`}
       </Button>
     </Form>
   );
@@ -96,25 +120,25 @@ interface Errors {
   phone?: string;
 }
 
-export async function createOrder({request}: {request: Request}) {
+export async function createOrder({ request }: { request: Request }) {
   const formData = await request.formData();
-  const {address, cart, customer, priority, ...restData} = Object.fromEntries(
+  const { address, cart, customer, priority, ...restData } = Object.fromEntries(
     formData
-  ) as {[key: string]: string};
-  const phone = restData['phone-number'];
+  ) as { [key: string]: string };
+  const phone = restData["phone-number"];
 
   const errors: Errors = {};
 
-  if (customer.trim() === '') {
-    errors.customer = 'Field is required.';
+  if (customer.trim() === "") {
+    errors.customer = "Field is required.";
   }
 
   if (!isValidPhone(phone)) {
-    errors.phone = 'Enter valid phone number.';
+    errors.phone = "Enter valid phone number.";
   }
 
-  if (address.trim() === '') {
-    errors.address = 'Field is required.';
+  if (address.trim() === "") {
+    errors.address = "Field is required.";
   }
 
   if (Object.keys(errors).length > 0) return errors;
@@ -124,11 +148,10 @@ export async function createOrder({request}: {request: Request}) {
     cart: JSON.parse(cart as string),
     customer,
     phone,
-    priority: priority === 'on' ? true : false,
-    position: '',
+    priority: priority === "on" ? true : false,
+    position: "",
   };
 
   const newOrder = await createNewOrder(order);
-  console.log('newOrder', newOrder);
   return redirect(`/order/${newOrder.id}`);
 }

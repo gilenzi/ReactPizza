@@ -4,11 +4,11 @@ import {
   ReactNode,
   useImperativeHandle,
   useRef,
-} from 'react';
-import styled, {css} from 'styled-components';
+} from "react";
+import styled, { css } from "styled-components";
 
 interface ButtonProps {
-  modifier?: 'outline' | 'primary' | 'danger';
+  modifier?: "outline" | "primary" | "danger";
 }
 
 export const StyledButton = styled.button<ButtonProps>`
@@ -25,9 +25,14 @@ export const StyledButton = styled.button<ButtonProps>`
   white-space: nowrap;
   transition: all 0.3s linear;
 
-  ${({modifier}) => {
+  &:focus {
+    outline: 2px solid ${({ theme: { colors } }) => colors.primary};
+    outline-offset: 2px;
+  }
+
+  ${({ modifier }) => {
     switch (modifier) {
-      case 'outline':
+      case "outline":
         return css`
           background: transparent;
           color: #333;
@@ -38,7 +43,7 @@ export const StyledButton = styled.button<ButtonProps>`
             color: white;
           }
         `;
-      case 'primary':
+      case "primary":
         return css`
           background: blue;
           color: white;
@@ -48,7 +53,7 @@ export const StyledButton = styled.button<ButtonProps>`
             background: darkblue;
           }
         `;
-      case 'danger':
+      case "danger":
         return css`
           background: red;
           color: white;
@@ -72,7 +77,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({children, ...props}, ref) => {
+  ({ children, ...props }, ref) => {
     const buttonRef = useRef<HTMLButtonElement>(null);
 
     useImperativeHandle(ref, () => buttonRef.current!);

@@ -1,70 +1,31 @@
-import {useLoaderData} from 'react-router-dom';
-import {getOrder} from '../../services/api-restaurant';
-import {Container} from '../../ui/container/container';
-import {Row} from '../../ui/row/row';
-import styled, {css} from 'styled-components';
+import {
+  LoaderFunctionArgs,
+  useFetcher,
+  useLoaderData,
+} from "react-router-dom";
+import { getOrder } from "../../services/api-restaurant";
+import { Container } from "../../ui/container/container";
+import { Row } from "../../ui/row/row";
+import { CartItems } from "../../ui/cart-items/cart-items";
+import {
+  OrderTitle,
+  OrderTag,
+  OrderEstimatedContainer,
+  OrderEstimatedTitle,
+  OrderEstimatedText,
+  OrderSummary,
+  OrderSummaryText,
+  OrderPayText,
+} from "./styles";
+import { useEffect } from "react";
+import { LoaderSpinner } from "../../components/loader/styles";
+import { calcMinutesLeft, formatdDate } from "../../utils/utils";
+import { CartItem, MenuItem } from "../../state/cart/cart-slice";
 
-const OrderTitle = styled.h2`
-  color: ${({theme}) => theme.colors.dark};
-  font-size: ${({theme}) => theme.fontSizes.lg};
+export function OrderDetails() {
+  const fetcher = useFetcher();
 
-  margin-bottom: 2rem;
-`;
-
-interface IOrderTag {
-  modifier?: string;
-}
-
-const OrderTag = styled.span<IOrderTag>`
-  display: flex;
-  align-items: center;
-  color: ${({theme}) => theme.colors.white};
-  letter-spacing: 0.025rem;
-  text-transform: uppercase;
-  font-weight: 600;
-  line-height: 1.25rem;
-  font-size: ${({theme}) => theme.fontSizes.sm};
-  padding: 0.25rem 0.75rem;
-  background-color: orange;
-  border-radius: 50px;
-  margin-bottom: 2rem;
-
-  ${({modifier, theme}) => {
-    switch (modifier) {
-      case 'primary':
-        return css`
-          background-color: ${theme.colors.danger};
-        `;
-      case 'success': {
-        return css`
-          background-color: ${theme.colors.success};
-        `;
-      }
-    }
-  }}
-`;
-
-const OrderEstimatedContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 1.5rem;
-  background-color: lightgray;
-`;
-
-const OrderEstimatedTitle = styled.h3`
-  font-weight: 500;
-  color: ${({theme}) => theme.colors.dark};
-`;
-
-const OrderEstimatedText = styled.h3`
-  color: ${({theme}) => theme.colors.dark};
-  font-size: ${({theme}) => theme.fontSizes.sm};
-`;
-
-export function OrderDetails(props) {
   const {
-    customer,
     estimatedDelivery,
     cart,
     id,
@@ -73,29 +34,78 @@ export function OrderDetails(props) {
     priorityPrice,
     status,
   } = useLoaderData();
+
+  const deliveryIn = calcMinutesLeft(estimatedDelivery);
+
+  useEffect(() => {
+    if (fetcher.state === "idle" && !fetcher.data) fetcher.load("/menu");
+  }, [fetcher]);
+
+  let cartItemsIngredients = [];
+  if (fetcher.data?.data) {
+    const { data: menuData } = fetcher.data;
+
+    cartItemsIngredients = cart.map((cartItem: CartItem) => {
+      const { ingredients } = menuData.find(
+        (menuItem: MenuItem) => menuItem.id === cartItem.pizzaId
+      );
+      return ingredients || [];
+    });
+  }
+
   return (
     <Container>
-      <Row styles={{justifyContent: 'space-between'}}>
+      <Row styles={{ justifyContent: "space-between", flexWrap: "wrap" }}>
         <OrderTitle>Order #{id} status</OrderTitle>
         <Row>
-          <OrderTag style={{marginRight: '1rem'}} modifier="primary">
-            Priority
-          </OrderTag>
-          <OrderTag modifier="success">Preparing order</OrderTag>
+          {priority && (
+            <OrderTag style={{ marginRight: "1rem" }} modifier="primary">
+              Priority
+            </OrderTag>
+          )}
+          <OrderTag modifier="success">{status} order</OrderTag>
         </Row>
       </Row>
       <OrderEstimatedContainer>
-        <OrderEstimatedTitle>Only 36 minutes left 😃</OrderEstimatedTitle>
+        <OrderEstimatedTitle>
+          {deliveryIn >= 0
+            ? `Only ${deliveryIn} minutes left 😃`
+            : `Order should have arrived.`}
+        </OrderEstimatedTitle>
         <OrderEstimatedText>
-          (Estimated delivery: Feb 13, 04:32 PM)
+          (Estimated delivery: {formatdDate(estimatedDelivery)})
         </OrderEstimatedText>
       </OrderEstimatedContainer>
+      {fetcher.state === "loading" ? (
+        <Row
+          styles={{
+            justifyContent: "center",
+            alignItems: "center",
+            height: "6rem",
+          }}
+        >
+          <LoaderSpinner />
+        </Row>
+      ) : (
+        <CartItems cartItems={cart} ingredients={cartItemsIngredients} />
+      )}
+      <OrderSummary>
+        <OrderSummaryText>Price pizza: ${orderPrice}</OrderSummaryText>
+        {priority && (
+          <OrderSummaryText>Price priority: ${priorityPrice}</OrderSummaryText>
+        )}
+        <OrderPayText>
+          To pay on delivery: €{orderPrice + priorityPrice}
+        </OrderPayText>
+      </OrderSummary>
     </Container>
   );
 }
 
-export async function loader({params}) {
-  const {id} = params;
-  const order = await getOrder(id);
-  return order;
+export async function loader({ params }: LoaderFunctionArgs) {
+  const { id } = params;
+  if (id) {
+    const order = await getOrder(id);
+    return order;
+  }
 }

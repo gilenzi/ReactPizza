@@ -1,9 +1,10 @@
-import {Link} from 'react-router-dom';
-import styled from 'styled-components';
+import { Link } from "react-router-dom";
+import styled from "styled-components";
 
 export const CartOVerviewWrapper = styled.div`
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
   padding: 1rem 3rem;
   background-color: rgb(41, 37, 36);

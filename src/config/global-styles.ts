@@ -1,4 +1,4 @@
-import {createGlobalStyle} from 'styled-components';
+import { createGlobalStyle } from "styled-components";
 
 export const GlobalStyles = createGlobalStyle`
     body{
@@ -11,9 +11,14 @@ export const GlobalStyles = createGlobalStyle`
         height: 100vh;
     }
     .container{
-        padding: 0 5rem;
+        padding: 0 2rem;
         padding-top: 1.3rem;
         overflow: auto;
+
+        @media ${({ theme: { device } }) => device.tablet} {
+            padding: 0 5rem;
+            padding-top: 1.3rem;
+        }
     }
 
 `;

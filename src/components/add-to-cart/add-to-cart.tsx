@@ -1,12 +1,12 @@
-import styled from 'styled-components';
-import Button from '../../ui/button/button';
-import {Row} from '../../ui/row/row';
-import {useDispatch} from 'react-redux';
+import styled from "styled-components";
+import Button from "../../ui/button/button";
+import { Row } from "../../ui/row/row";
+import { useDispatch } from "react-redux";
 import {
   decreaseQty,
   increaseQty,
   removeFromCart,
-} from '../../state/cart/cart-slice';
+} from "../../state/cart/cart-slice";
 
 const Count = styled.span`
   font-weight: 500;
@@ -21,24 +21,24 @@ interface AddToCartProps {
   pizzaId: number;
 }
 
-export function AddToCart({count, pizzaId}: AddToCartProps) {
+export function AddToCart({ count, pizzaId }: AddToCartProps) {
   const dispatch = useDispatch();
 
   function removeHandler() {
-    dispatch(removeFromCart({pizzaId}));
+    dispatch(removeFromCart({ pizzaId }));
   }
 
   function increaseHandler() {
-    dispatch(increaseQty({pizzaId}));
+    dispatch(increaseQty({ pizzaId }));
   }
 
   function decreaseHandler() {
-    dispatch(decreaseQty({pizzaId}));
+    dispatch(decreaseQty({ pizzaId }));
   }
 
   return (
-    <Row styles={{justifyContent: 'space-between'}}>
-      <Row styles={{alignItems: 'center', marginRight: '0.5rem'}}>
+    <Row styles={{ justifyContent: "space-between", marginBottom: "0.8rem" }}>
+      <Row styles={{ alignItems: "center", marginRight: "0.5rem" }}>
         <Button onClick={decreaseHandler}>-</Button>
         <Count>{count}</Count>
         <Button onClick={increaseHandler}>+</Button>

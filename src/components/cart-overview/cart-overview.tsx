@@ -1,14 +1,14 @@
-import {useSelector} from 'react-redux';
-import {RootState} from '../../state/store';
+import { useSelector } from "react-redux";
+import { RootState } from "../../state/store";
 import {
   CartOVerviewWrapper,
   CardDescription,
   CardDescriptionText,
   CardCartLink,
-} from './styled-components';
+} from "./styles";
 
 export default function CartOVerview() {
-  const {total, items} = useSelector((state: RootState) => state.cart);
+  const { total, items } = useSelector((state: RootState) => state.cart);
   const pizzasQty = items.reduce((acc, item) => item.quantity + acc, 0);
 
   if (!pizzasQty) return null;
@@ -18,7 +18,7 @@ export default function CartOVerview() {
       <CardDescription>
         <CardDescriptionText>
           <span>
-            {pizzasQty} {pizzasQty === 1 ? 'pizza' : 'pizzas'}
+            {pizzasQty} {pizzasQty === 1 ? "pizza" : "pizzas"}
           </span>
           <span>${total}</span>
         </CardDescriptionText>

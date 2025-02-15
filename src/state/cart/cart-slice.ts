@@ -1,5 +1,5 @@
-import {createSelector, createSlice} from '@reduxjs/toolkit';
-import {RootState} from '../store';
+import { createSelector, createSlice } from "@reduxjs/toolkit";
+import { RootState } from "../store";
 
 export interface CartItem {
   pizzaId: number;
@@ -7,6 +7,15 @@ export interface CartItem {
   unitPrice: number;
   quantity: number;
   totalPrice: number;
+}
+
+export interface MenuItem {
+  id: number;
+  imageUrl: string;
+  ingredients: string[];
+  name: string;
+  soldOut: boolean;
+  unitPrice: number;
 }
 
 export interface CartState {
@@ -20,11 +29,11 @@ const initialState: CartState = {
 };
 
 const cartSlice = createSlice({
-  name: 'cart',
+  name: "cart",
   initialState,
   reducers: {
     addToCart: (state, action) => {
-      const {items} = state;
+      const { items } = state;
       const addedItem = action.payload;
 
       const isInCartInd = items.findIndex(
@@ -47,7 +56,7 @@ const cartSlice = createSlice({
         0
       );
     },
-    removeFromCart: (state, {payload: {pizzaId}}) => {
+    removeFromCart: (state, { payload: { pizzaId } }) => {
       const newCartItems = state.items.filter(
         (item) => item.pizzaId !== pizzaId
       );
@@ -56,30 +65,29 @@ const cartSlice = createSlice({
     clearCart: (state) => {
       state.items = [];
     },
-    increaseQty: (state, {payload: {pizzaId}}) => {
+    increaseQty: (state, { payload: { pizzaId } }) => {
       const updatedCartItemIndex = state.items.findIndex(
         (item) => item.pizzaId === pizzaId
       );
       if (updatedCartItemIndex !== -1) {
-        state.items[updatedCartItemIndex].quantity += 1;
-        state.items[updatedCartItemIndex].totalPrice =
-          state.items[updatedCartItemIndex].quantity *
-          state.items[updatedCartItemIndex].unitPrice;
+        const itemForUpdate = state.items[updatedCartItemIndex];
+        itemForUpdate.quantity += 1;
+        itemForUpdate.totalPrice =
+          itemForUpdate.quantity * itemForUpdate.unitPrice;
         calcTotal(state);
       } else {
         console.warn(`Pizza with ID ${pizzaId} not found.`);
       }
     },
-    decreaseQty: (state, {payload: {pizzaId}}) => {
+    decreaseQty: (state, { payload: { pizzaId } }) => {
       const updatedCartItemIndex = state.items.findIndex(
         (item) => item.pizzaId === pizzaId
       );
       const updatedCartItem = state.items[updatedCartItemIndex];
       if (updatedCartItem && updatedCartItem.quantity > 0) {
-        state.items[updatedCartItemIndex].quantity -= 1;
-        state.items[updatedCartItemIndex].totalPrice =
-          state.items[updatedCartItemIndex].quantity *
-          state.items[updatedCartItemIndex].unitPrice;
+        updatedCartItem.quantity -= 1;
+        updatedCartItem.totalPrice =
+          updatedCartItem.quantity * updatedCartItem.unitPrice;
         calcTotal(state);
       }
     },
@@ -87,7 +95,7 @@ const cartSlice = createSlice({
 });
 
 function calcTotal(state: CartState) {
-  const {items} = state;
+  const { items } = state;
   state.total = items.reduce(
     (acc, item) => item.quantity * item.unitPrice + acc,
     0
@@ -101,7 +109,12 @@ export const getPizzaQty = createSelector(
   (items, id) => items.find((item) => item.pizzaId === id)?.quantity || 0
 );
 
-export const {addToCart, removeFromCart, increaseQty, decreaseQty, clearCart} =
-  cartSlice.actions;
+export const {
+  addToCart,
+  removeFromCart,
+  increaseQty,
+  decreaseQty,
+  clearCart,
+} = cartSlice.actions;
 
 export default cartSlice.reducer;
